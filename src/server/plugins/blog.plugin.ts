@@ -1,0 +1,104 @@
+import {
+    BlogContent,
+    PluginOptions as BlogPluginOptions,
+} from '@docusaurus/plugin-content-blog'
+import { LoadedPlugin, Props } from '@docusaurus/types'
+import * as fs from 'fs'
+import * as path from 'path'
+import { ImageGenerator } from '../imageGenerator'
+import { BlogPageData } from '../types/blog.types'
+import { ImageRenderer } from '../types/image.types'
+import { PluginOptions } from '../types/plugin.types'
+import { BasePlugin } from './base.plugin'
+
+type BlogPageItem = Omit<BlogPageData, 'document'>
+
+export class BlogPlugin extends BasePlugin<BlogPageItem> {
+    static readonly plugin = 'docusaurus-plugin-content-blog'
+
+    protected pluginName = BlogPlugin.plugin
+    protected pageType = 'blog'
+
+    constructor(
+        context: Props,
+        options: PluginOptions,
+        imageGenerator: ImageGenerator,
+        imageRenderer: ImageRenderer,
+    ) {
+        super(context, options, imageGenerator, imageRenderer)
+    }
+
+    protected getPagePermalink(page: BlogPageItem): string {
+        return page.permalink
+    }
+
+    protected getPageHtmlPath(page: BlogPageItem): string | undefined {
+        return this.getHtmlPathFromPermalink(page.permalink)
+    }
+
+    protected loadInstance = async (plugin: LoadedPlugin) => {
+        const content = plugin.content as BlogContent
+        const options = plugin.options as BlogPluginOptions
+
+        content.blogListPaginated.forEach((value) => {
+            this.pages.push({
+                data: value,
+                plugin: options,
+                pageType: 'list',
+                permalink: value.metadata.permalink,
+            })
+        })
+
+        content.blogPosts.forEach((post) => {
+            this.pages.push({
+                data: post,
+                plugin: options,
+                pageType: 'post',
+                permalink: post.metadata.permalink,
+            })
+        })
+
+        if (content.blogTagsListPath) {
+            const filePath = this.getHtmlPathFromPermalink(content.blogTagsListPath)
+
+            fs.existsSync(filePath) &&
+                this.pages.push({
+                    pageType: 'tags',
+                    plugin: options,
+                    data: {
+                        permalink: content.blogTagsListPath,
+                    },
+                    permalink: content.blogTagsListPath,
+                })
+        }
+
+        if (options.archiveBasePath) {
+            const permalink = path.join(
+                '/',
+                options.routeBasePath,
+                options.archiveBasePath,
+            )
+
+            fs.existsSync(this.getHtmlPathFromPermalink(permalink)) &&
+                this.pages.push({
+                    plugin: options,
+                    pageType: 'archive',
+                    data: { permalink: permalink },
+                    permalink,
+                })
+        }
+
+        {
+            Object.entries(content.blogTags).map(([key, value]) => {
+                value.pages.forEach((page) => {
+                    this.pages.push({
+                        pageType: 'tag',
+                        plugin: options,
+                        data: { ...page.metadata, label: value.label },
+                        permalink: page.metadata.permalink,
+                    })
+                })
+            })
+        }
+    }
+}

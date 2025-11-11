@@ -6,14 +6,14 @@ export * from './server/types'
 export type { PluginOptions }
 
 export default function logosTheme(
-  context: LoadContext,
-  options: PluginOptions,
+    context: LoadContext,
+    options: PluginOptions,
 ): Plugin<any> {
-  return {
-    name: 'docusaurus-og',
+    return {
+        name: 'docusaurus-og',
 
-    async postBuild(props) {
-      await postBuildFactory(options)(props)
-    },
-  }
+        async postBuild(props) {
+            await postBuildFactory(options)(props)
+        },
+    }
 }
