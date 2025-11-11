@@ -35,4 +35,6 @@ export const postBuildFactory =
 
             plugin && (await plugin.process())
         }
+
+        await imageGenerator.cleanup()
     }
