@@ -7,7 +7,6 @@ import React from 'react'
 import type Satori from 'satori'
 import { type SatoriOptions } from 'satori'
 import { Resvg } from '@resvg/resvg-js'
-import { PLUGIN_NAME } from '.'
 
 
 export type ImageGeneratorOptions = SatoriOptions
@@ -34,7 +33,7 @@ export class ImageGenerator {
         },
     ) {
         this.outDir = path.join(this.args.websiteOutDir, this.args.dir)
-        this.cacheDir = path.join(this.outDir, PLUGIN_NAME, 'cache')
+        this.cacheDir = path.join(this.args.pluginDir, 'cache')
     }
 
     public init = async () => {
