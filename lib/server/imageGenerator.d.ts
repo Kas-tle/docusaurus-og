@@ -9,13 +9,17 @@ export type ImageGeneratorResult = {
 export declare class ImageGenerator {
     private args;
     private satori;
-    private cache;
+    private fileCache;
+    private runCache;
     private outDir;
+    private cacheDir;
     constructor(args: {
         dir: string;
         websiteUrl: string;
         websiteOutDir: string;
+        pluginDir: string;
     });
     init: () => Promise<void>;
     generate: (element: React.ReactNode, options: ImageGeneratorOptions) => Promise<ImageGeneratorResult>;
+    cleanup: () => Promise<void>;
 }

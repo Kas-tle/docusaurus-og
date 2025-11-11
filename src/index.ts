@@ -13,7 +13,7 @@ export default function logosTheme(
         name: 'docusaurus-og',
 
         async postBuild(props) {
-            await postBuildFactory(options)(props)
+            await postBuildFactory(options, context)(props)
         },
     }
 }

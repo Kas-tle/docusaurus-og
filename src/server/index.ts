@@ -1,9 +1,10 @@
-import { Props } from '@docusaurus/types'
+import { LoadContext, Props } from '@docusaurus/types'
 import { BlogPlugin } from './plugins/blog.plugin'
 import { DocsPlugin } from './plugins/docs.plugin'
 import { ImageGenerator } from './imageGenerator'
 import { PagesPlugin } from './plugins/pages.plugin'
 import { PluginOptions } from './types/plugin.types'
+import path from 'path';
 
 const plugins = {
     [DocsPlugin.plugin]: DocsPlugin,
@@ -11,12 +12,15 @@ const plugins = {
     [PagesPlugin.plugin]: PagesPlugin,
 }
 
+export const PLUGIN_NAME = 'docusaurus-og'
+
 export const postBuildFactory =
-    (options: PluginOptions) => async (props: Props) => {
+    (options: PluginOptions, context: LoadContext) => async (props: Props) => {
         const imageGenerator = new ImageGenerator({
             websiteUrl: props.siteConfig.url,
             websiteOutDir: props.outDir,
             dir: options.path,
+            pluginDir: path.join(context.generatedFilesDir, PLUGIN_NAME),
         })
 
         await imageGenerator.init()
