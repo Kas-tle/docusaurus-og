@@ -30,10 +30,11 @@ export class ImageGenerator {
             websiteUrl: string
             websiteOutDir: string
             pluginDir: string
+            currentLocale: string
         },
     ) {
         this.outDir = path.join(this.args.websiteOutDir, this.args.dir)
-        this.cacheDir = path.join(this.args.pluginDir, 'cache')
+        this.cacheDir = path.join(this.args.pluginDir, this.args.currentLocale, 'cache')
     }
 
     public init = async () => {

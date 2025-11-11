@@ -21,6 +21,7 @@ export const postBuildFactory =
             websiteOutDir: props.outDir,
             dir: options.path,
             pluginDir: path.join(context.generatedFilesDir, PLUGIN_NAME),
+            currentLocale: props.i18n.currentLocale,
         })
 
         await imageGenerator.init()

@@ -18,6 +18,7 @@ export declare class ImageGenerator {
         websiteUrl: string;
         websiteOutDir: string;
         pluginDir: string;
+        currentLocale: string;
     });
     init: () => Promise<void>;
     generate: (element: React.ReactNode, options: ImageGeneratorOptions) => Promise<ImageGeneratorResult>;
