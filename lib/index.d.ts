@@ -3,4 +3,4 @@ import { PluginOptions } from './server/types/plugin.types';
 export { imageRendererFactory } from './server/imageRenderer.factory';
 export * from './server/types';
 export type { PluginOptions };
-export default function logosTheme(context: LoadContext, options: PluginOptions): Plugin<any>;
+export default function docusaurusOg(context: LoadContext, options: PluginOptions): Plugin<any>;

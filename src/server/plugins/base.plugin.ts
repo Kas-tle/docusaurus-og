@@ -6,6 +6,7 @@ import { ImageRenderer } from '../types/image.types'
 import { PluginOptions } from '../types/plugin.types'
 import logger from '@docusaurus/logger'
 import * as progress from '../progress'
+import { WriteQueue } from '../writeQueue'
 
 export abstract class BasePlugin<T> {
     /**
@@ -47,7 +48,10 @@ export abstract class BasePlugin<T> {
         protected options: PluginOptions,
         protected imageGenerator: ImageGenerator,
         protected imageRenderer: ImageRenderer,
-    ) { }
+        protected writeQueue: WriteQueue,
+    ) {
+        this.writeQueue = new WriteQueue()
+    }
 
     /**
      * The main entry point to process this plugin's content.
@@ -96,7 +100,7 @@ export abstract class BasePlugin<T> {
                 continue
             }
 
-            const document = new Document(htmlPath)
+            const document = new Document(htmlPath, this.writeQueue)
             await document.load()
 
             if (!document.loaded) {
@@ -125,6 +129,7 @@ export abstract class BasePlugin<T> {
             bar.increment()
         }
         bar.stop()
+        await this.writeQueue.waitForIdle()
         logger.success(`Generated og images for ${this.pageType} pages`)
     }
 

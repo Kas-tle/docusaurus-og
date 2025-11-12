@@ -9,8 +9,9 @@ export type ImageGeneratorResult = {
 export declare class ImageGenerator {
     private args;
     private satori;
-    private fileCache;
+    private siteCache;
     private runCache;
+    private writeQueue;
     private outDir;
     private cacheDir;
     constructor(args: {

@@ -5,13 +5,12 @@ export { imageRendererFactory } from './server/imageRenderer.factory'
 export * from './server/types'
 export type { PluginOptions }
 
-export default function logosTheme(
+export default function docusaurusOg(
     context: LoadContext,
     options: PluginOptions,
 ): Plugin<any> {
     return {
         name: 'docusaurus-og',
-
         async postBuild(props) {
             await postBuildFactory(options, context)(props)
         },

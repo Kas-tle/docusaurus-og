@@ -9,6 +9,7 @@ import { ImageGenerator } from '../imageGenerator'
 import { ImageRenderer } from '../types/image.types'
 import { PluginOptions } from '../types/plugin.types'
 import { BasePlugin } from './base.plugin'
+import { WriteQueue } from '../writeQueue'
 
 type PagesPageItem = Omit<PageData, 'document'>
 
@@ -23,8 +24,9 @@ export class PagesPlugin extends BasePlugin<PagesPageItem> {
         options: PluginOptions,
         imageGenerator: ImageGenerator,
         imageRenderer: ImageRenderer,
+        writeQueue: WriteQueue,
     ) {
-        super(context, options, imageGenerator, imageRenderer)
+        super(context, options, imageGenerator, imageRenderer, writeQueue)
     }
 
     protected getPagePermalink(page: PagesPageItem): string {
@@ -42,7 +44,7 @@ export class PagesPlugin extends BasePlugin<PagesPageItem> {
         if (!Array.isArray(content)) return
 
         for (const metadata of content) {
-            const doc = new Document(this.getHtmlPathFromPermalink(metadata.permalink))
+            const doc = new Document(this.getHtmlPathFromPermalink(metadata.permalink), this.writeQueue)
             await doc.load()
 
             const title =

@@ -3,10 +3,12 @@ import * as fsp from 'fs/promises'
 import hashObj from 'object-hash'
 import path from 'path'
 import React from 'react'
+import logger from '@docusaurus/logger'
 
 import type Satori from 'satori'
 import { type SatoriOptions } from 'satori'
 import { Resvg } from '@resvg/resvg-js'
+import { WriteQueue } from './writeQueue'
 
 
 export type ImageGeneratorOptions = SatoriOptions
@@ -18,8 +20,9 @@ export type ImageGeneratorResult = {
 
 export class ImageGenerator {
     private satori: typeof Satori
-    private fileCache: Set<string> = new Set()
-    private runCache: Record<string, ImageGeneratorResult> = {}
+    private siteCache: Set<string> = new Set()
+    private runCache: Set<string> = new Set()
+    private writeQueue = new WriteQueue()
 
     private outDir: string = ''
     private cacheDir: string = ''
@@ -46,14 +49,22 @@ export class ImageGenerator {
         if (!fs.existsSync(this.cacheDir)) {
             await fsp.mkdir(this.cacheDir, { recursive: true })
         } else {
-            const files = await fsp.readdir(this.cacheDir)
-            files.forEach((file) => {
+            const siteCacheFiles = await fsp.readdir(this.cacheDir)
+            siteCacheFiles.forEach((file) => {
                 if (file.endsWith('.png')) {
                     const hash = path.basename(file, '.png')
-                    this.fileCache.add(hash)
+                    this.siteCache.add(hash)
                 }
             })
         }
+
+        const runCacheFiles = await fsp.readdir(this.outDir)
+        runCacheFiles.forEach((file) => {
+            if (file.endsWith('.png')) {
+                const hash = path.basename(file, '.png')
+                this.runCache.add(hash)
+            }
+        })
     }
 
     public generate = async (
@@ -61,7 +72,6 @@ export class ImageGenerator {
         options: ImageGeneratorOptions,
     ): Promise<ImageGeneratorResult> => {
         const hash = hashObj([element, options])
-        if (this.runCache[hash]) return this.runCache[hash]!
 
         const imageName = `${hash}.png`
         const absolutePath = path.join(this.outDir, imageName)
@@ -79,39 +89,35 @@ export class ImageGenerator {
             url: url.toString(),
         }
 
-        if (this.fileCache.has(hash)) {
-            const cachePath = path.join(this.cacheDir, imageName)
-            await fsp.copyFile(cachePath, absolutePath)
-            this.runCache[hash] = result
+        if (this.runCache.has(hash)) {
+            return result
+        }
+
+        const cachePath = path.join(this.cacheDir, imageName)
+
+        if (this.siteCache.has(hash)) {
+            this.writeQueue.addCopy(cachePath, absolutePath)
+            this.runCache.add(hash)
             return result
         }
 
         const svg = await this.satori(element, options)
-
         const pngBuffer = new Resvg(svg).render().asPng()
-        await fsp.writeFile(absolutePath, pngBuffer as Uint8Array)
-        const cachePath = path.join(this.cacheDir, imageName)
-        await fsp.writeFile(cachePath, pngBuffer as Uint8Array)
-        this.fileCache.add(hash)
-
-        this.runCache[hash] = result
+        this.writeQueue.addWrite(absolutePath, pngBuffer)
+        
+        this.writeQueue.addWrite(cachePath, pngBuffer)
+        this.runCache.add(hash)
 
         return result
     }
 
     public cleanup = async () => {
-        // remove cached files that were not used in this run
-        const usedFiles = new Set(
-            Object.values(this.runCache).map((item) =>
-                path.basename(item.absolutePath),
-            ),
-        )
-
+        await this.writeQueue.waitForIdle()
         const files = await fsp.readdir(this.cacheDir)
         for (const file of files) {
-            if (file.endsWith('.png') && !usedFiles.has(file)) {
+            if (file.endsWith('.png') && !this.runCache.has(path.basename(file, '.png'))) {
                 await fsp.unlink(path.join(this.cacheDir, file))
-                this.fileCache.delete(path.basename(file, '.png'))
+                this.siteCache.delete(path.basename(file, '.png'))
             }
         }
     }

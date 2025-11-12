@@ -10,6 +10,7 @@ import { DocsPageData } from '../types/docs.types'
 import { ImageRenderer } from '../types/image.types'
 import { PluginOptions } from '../types/plugin.types'
 import { BasePlugin } from './base.plugin'
+import { WriteQueue } from '../writeQueue'
 
 type DocsPageItem = Omit<DocsPageData, 'document'>
 
@@ -24,8 +25,9 @@ export class DocsPlugin extends BasePlugin<DocsPageItem> {
         options: PluginOptions,
         imageGenerator: ImageGenerator,
         imageRenderer: ImageRenderer,
+        writeQueue: WriteQueue,
     ) {
-        super(context, options, imageGenerator, imageRenderer)
+        super(context, options, imageGenerator, imageRenderer, writeQueue)
     }
 
     protected getPagePermalink(page: DocsPageItem): string {

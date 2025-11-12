@@ -2,11 +2,13 @@ import { LoadedPlugin, Props } from '@docusaurus/types';
 import { ImageGenerator } from '../imageGenerator';
 import { ImageRenderer } from '../types/image.types';
 import { PluginOptions } from '../types/plugin.types';
+import { WriteQueue } from '../writeQueue';
 export declare abstract class BasePlugin<T> {
     protected context: Props;
     protected options: PluginOptions;
     protected imageGenerator: ImageGenerator;
     protected imageRenderer: ImageRenderer;
+    protected writeQueue: WriteQueue;
     /**
      * Holds the collected page/doc data for processing.
      */
@@ -35,7 +37,7 @@ export declare abstract class BasePlugin<T> {
      * Returns the final file system path to the 'index.html' for a given page item.
      */
     protected abstract getPageHtmlPath(page: T): string | undefined;
-    constructor(context: Props, options: PluginOptions, imageGenerator: ImageGenerator, imageRenderer: ImageRenderer);
+    constructor(context: Props, options: PluginOptions, imageGenerator: ImageGenerator, imageRenderer: ImageRenderer, writeQueue: WriteQueue);
     /**
      * The main entry point to process this plugin's content.
      */

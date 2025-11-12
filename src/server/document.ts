@@ -1,5 +1,6 @@
 import * as fsp from 'fs/promises'
 import { HTMLElement, parse as parseHTML } from 'node-html-parser'
+import { WriteQueue } from './writeQueue'
 
 const IMAGE_META_ELEMENTS: Array<[string, string]> = [
     ['name', 'image'],
@@ -11,7 +12,7 @@ export class Document {
     root: HTMLElement
     loaded = false
 
-    constructor(private path: string) { }
+    constructor(private path: string, private writeQueue: WriteQueue) { }
 
     load = async () => {
         const htmlString = await fsp.readFile(this.path, 'utf-8')
@@ -20,7 +21,7 @@ export class Document {
     }
 
     write = async () => {
-        await fsp.writeFile(this.path, Buffer.from(this.root.outerHTML) as Uint8Array)
+        this.writeQueue.addWrite(this.path, Buffer.from(this.root.outerHTML))
     }
 
     setImage = async (url: string) => {
