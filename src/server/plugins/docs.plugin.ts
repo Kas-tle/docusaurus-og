@@ -35,7 +35,6 @@ export class DocsPlugin extends BasePlugin<DocsPageItem> {
     }
 
     protected getPageHtmlPath(doc: DocsPageItem): string | undefined {
-        // Custom path logic for docs, as it was in the original
         if (!doc.metadata?.permalink) {
             return undefined
         }
@@ -50,7 +49,7 @@ export class DocsPlugin extends BasePlugin<DocsPageItem> {
         const content = plugin.content as LoadedContent
         const options = plugin.options as DocsPluginOptions
 
-        const { loadedVersions } = content
+        const loadedVersions = content?.loadedVersions ?? []
 
         for (const version of loadedVersions) {
             await this.loadVersion(options, version)
@@ -61,8 +60,9 @@ export class DocsPlugin extends BasePlugin<DocsPageItem> {
         options: DocsPluginOptions,
         version: LoadedVersion,
     ) => {
+        const docs = version?.docs ?? []
         this.pages.push(
-            ...version.docs.map((doc) => ({
+            ...docs.map((doc) => ({
                 version,
                 metadata: doc,
                 plugin: options,

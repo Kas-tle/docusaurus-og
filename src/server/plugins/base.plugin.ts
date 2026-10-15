@@ -66,9 +66,9 @@ export abstract class BasePlugin<T> {
      * and calls `loadInstance` for each one.
      */
     protected loadData = async () => {
-        const plugins = this.context.plugins.filter(
-            (plugin) => plugin.name === this.pluginName,
-        )
+        const plugins = this.context?.plugins?.filter(
+            (plugin) => plugin?.name === this.pluginName,
+        ) ?? []
 
         for (const plugin of plugins) {
             await this.loadInstance(plugin)
@@ -137,7 +137,8 @@ export abstract class BasePlugin<T> {
      * Removes the i18n locale suffix from a directory path.
      */
     protected stripLangFromPath = (path: string): string => {
-        const lang = this.context.i18n.locales.find((locale) =>
+        const locales = this.context?.i18n?.locales ?? []
+        const lang = locales.find((locale) =>
             path.endsWith(`/${locale}`),
         )
         return lang ? path.slice(0, -lang.length - 1) : path

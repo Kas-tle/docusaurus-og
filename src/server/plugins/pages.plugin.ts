@@ -4,7 +4,7 @@ import {
 } from '@docusaurus/plugin-content-pages'
 import { LoadedPlugin, Props } from '@docusaurus/types'
 import { PageData } from '../../index'
-import { Document } from '../document' // Still needed here for loadInstance
+import { Document } from '../document'
 import { ImageGenerator } from '../imageGenerator'
 import { ImageRenderer } from '../types/image.types'
 import { PluginOptions } from '../types/plugin.types'
@@ -34,6 +34,9 @@ export class PagesPlugin extends BasePlugin<PagesPageItem> {
     }
 
     protected getPageHtmlPath(page: PagesPageItem): string | undefined {
+        if (!page.metadata?.permalink) {
+            return undefined
+        }
         return this.getHtmlPathFromPermalink(page.metadata.permalink)
     }
 
@@ -44,15 +47,17 @@ export class PagesPlugin extends BasePlugin<PagesPageItem> {
         if (!Array.isArray(content)) return
 
         for (const metadata of content) {
+            if (!metadata?.permalink) continue
+
             const doc = new Document(this.getHtmlPathFromPermalink(metadata.permalink), this.writeQueue)
             await doc.load()
 
             const title =
-                (doc.loaded && doc.root.querySelector('title')?.textContent) || ''
+                (doc.loaded && doc.root?.querySelector('title')?.textContent) || ''
 
             const description =
                 (doc.loaded &&
-                    doc.root.querySelector('meta[name=description]')?.textContent) ||
+                    doc.root?.querySelector('meta[name=description]')?.textContent) ||
                 ''
 
             this.pages.push({

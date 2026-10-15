@@ -42,7 +42,7 @@ export class BlogPlugin extends BasePlugin<BlogPageItem> {
         const content = plugin.content as BlogContent
         const options = plugin.options as BlogPluginOptions
 
-        content.blogListPaginated.forEach((value) => {
+        content?.blogListPaginated?.forEach((value) => {
             this.pages.push({
                 data: value,
                 plugin: options,
@@ -51,7 +51,7 @@ export class BlogPlugin extends BasePlugin<BlogPageItem> {
             })
         })
 
-        content.blogPosts.forEach((post) => {
+        content?.blogPosts?.forEach((post) => {
             this.pages.push({
                 data: post,
                 plugin: options,
@@ -91,8 +91,8 @@ export class BlogPlugin extends BasePlugin<BlogPageItem> {
         }
 
         {
-            Object.entries(content.blogTags).map(([key, value]) => {
-                value.pages.forEach((page) => {
+            Object.entries(content?.blogTags ?? {}).map(([key, value]) => {
+                value?.pages?.forEach((page) => {
                     this.pages.push({
                         pageType: 'tag',
                         plugin: options,
