@@ -100,32 +100,37 @@ export abstract class BasePlugin<T> {
                 continue
             }
 
-            const document = new Document(htmlPath, this.writeQueue)
-            await document.load()
+            try {
+                const document = new Document(htmlPath, this.writeQueue)
+                await document.load()
 
-            if (!document.loaded) {
-                bar.increment()
-                continue
-            }
+                if (!document.loaded) {
+                    bar.increment()
+                    continue
+                }
 
-            const image = await this.imageRenderer(
-                {
-                    ...page,
-                    document,
-                    websiteOutDir: this.context.outDir,
-                },
-                this.context,
-            )
+                const image = await this.imageRenderer(
+                    {
+                        ...page,
+                        document,
+                        websiteOutDir: this.context.outDir,
+                    },
+                    this.context,
+                )
 
-            if (!image) {
+                if (!image) {
+                    await document.write()
+                    bar.increment()
+                    continue
+                }
+
+                const generated = await this.imageGenerator.generate(...image)
+                await document.setImage(generated.url)
                 await document.write()
-                bar.increment()
-                continue
+            } catch (err) {
+                logger.warn(`[docusaurus-og] Skipping missing or unreadable file for path: ${htmlPath}`)
             }
 
-            const generated = await this.imageGenerator.generate(...image)
-            await document.setImage(generated.url)
-            await document.write()
             bar.increment()
         }
         bar.stop()
@@ -149,7 +154,7 @@ export abstract class BasePlugin<T> {
      */
     protected getHtmlPathFromPermalink = (permalink: string): string => {
         return path.join(
-            this.stripLangFromPath(this.context.outDir),
+            this.context.outDir,
             permalink,
             'index.html',
         )
