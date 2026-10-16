@@ -141,7 +141,7 @@ export abstract class BasePlugin<T> {
     /**
      * Removes the i18n locale suffix from a directory path.
      */
-    protected stripLangFromPath = (path: string): string => {
+    protected stripLangFromOutDir = (path: string): string => {
         const locales = this.context?.i18n?.locales ?? []
         const lang = locales.find((locale) =>
             path.endsWith(`/${locale}`),
@@ -150,12 +150,23 @@ export abstract class BasePlugin<T> {
     }
 
     /**
+     * Removes the i18n locale suffix from a permalink path.
+     */
+    protected stripLangFromPermalink = (path: string): string => {
+        const locales = this.context?.i18n?.locales ?? []
+        const lang = locales.find((locale) =>
+            path.startsWith(`/${locale}/`),
+        )
+        return lang ? path.slice(lang.length + 1) : path
+    }
+
+    /**
      * A common helper to get the HTML file path from a permalink.
      */
     protected getHtmlPathFromPermalink = (permalink: string): string => {
         return path.join(
-            this.context.outDir,
-            permalink,
+            this.stripLangFromOutDir(this.context.outDir),
+            this.stripLangFromPermalink(permalink),
             'index.html',
         )
     }

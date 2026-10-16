@@ -39,8 +39,8 @@ export class DocsPlugin extends BasePlugin<DocsPageItem> {
             return undefined
         }
         return path.join(
-            this.context.outDir,
-            doc.metadata.permalink,
+            this.stripLangFromOutDir(this.context.outDir),
+            this.stripLangFromPermalink(doc.metadata.permalink),
             'index.html',
         )
     }

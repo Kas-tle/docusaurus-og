@@ -10,6 +10,7 @@ import { ImageRenderer } from '../types/image.types'
 import { PluginOptions } from '../types/plugin.types'
 import { BasePlugin } from './base.plugin'
 import { WriteQueue } from '../writeQueue'
+import logger from '@docusaurus/logger'
 
 type PagesPageItem = Omit<PageData, 'document'>
 
@@ -49,25 +50,29 @@ export class PagesPlugin extends BasePlugin<PagesPageItem> {
         for (const metadata of content) {
             if (!metadata?.permalink) continue
 
-            const doc = new Document(this.getHtmlPathFromPermalink(metadata.permalink), this.writeQueue)
-            await doc.load()
+            try {
+                const doc = new Document(this.getHtmlPathFromPermalink(metadata.permalink), this.writeQueue)
+                await doc.load()
 
-            const title =
-                (doc.loaded && doc.root?.querySelector('title')?.textContent) || ''
+                const title =
+                    (doc.loaded && doc.root?.querySelector('title')?.textContent) || ''
 
-            const description =
-                (doc.loaded &&
-                    doc.root?.querySelector('meta[name=description]')?.textContent) ||
-                ''
+                const description =
+                    (doc.loaded &&
+                        doc.root?.querySelector('meta[name=description]')?.textContent) ||
+                    ''
 
-            this.pages.push({
-                metadata: {
-                    ...metadata,
-                    title,
-                    description,
-                },
-                plugin: options,
-            })
+                this.pages.push({
+                    metadata: {
+                        ...metadata,
+                        title,
+                        description,
+                    },
+                    plugin: options,
+                })
+            } catch (err) {
+                logger.warn(`[docusaurus-og] Error loading page: ${metadata.permalink}`)
+            }
         }
     }
 }

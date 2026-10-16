@@ -55,7 +55,11 @@ export declare abstract class BasePlugin<T> {
     /**
      * Removes the i18n locale suffix from a directory path.
      */
-    protected stripLangFromPath: (path: string) => string;
+    protected stripLangFromOutDir: (path: string) => string;
+    /**
+     * Removes the i18n locale suffix from a permalink path.
+     */
+    protected stripLangFromPermalink: (path: string) => string;
     /**
      * A common helper to get the HTML file path from a permalink.
      */
